@@ -20,8 +20,8 @@ os.putenv('SDL_MOUSEDRV', 'TSLIB')
 os.putenv('SDL_MOUSEDEV', '/dev/input/touchscreen')
 
 #Tell Pygame to not use any audio driver
-os.environ["SDL_AUDIODRIVER"] = "disk" 
-os.environ["SDL_PATH_DSP"] = "/dev/null" 
+os.environ["SDL_AUDIODRIVER"] = "none" 
+#os.environ["SDL_PATH_DSP"] = "/dev/null" 
 
 #init Logging
 log_format = '%(asctime)-6s: %(name)s - %(levelname)s - %(message)s'

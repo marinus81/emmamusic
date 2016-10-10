@@ -74,7 +74,7 @@ class Player(object):
         try:
             self.mpd_client.connect(**self.conn_details)
         except ConnectionError as e:
-            logger.debug("ConnectionError Exception: "+e.args)
+            logger.debug("ConnectionError Exception: "+e.args[0])
             if e.args[0] == "Already connected":
                 logger.debug("Already connected")
             else:
@@ -95,13 +95,12 @@ class Player(object):
 
     def play(self,playlistname, progress=None, retry=0):
         """Play a playlist"""
-
+ 
        
-        with self.mpd_client:
             
-           
-                    
-            try:
+        #order of try and with is important - otherwise retry will block due to Locking   
+        try:
+            with self.mpd_client:    
                 self.mpd_client.clear()
                 self.mpd_client.load(playlistname)
            
@@ -117,13 +116,13 @@ class Player(object):
                 print(info)
                 if 'title' in info:
                     self.songtitle=info['title']
-            except ConnectionError as e:
-                if retry < 3:
-                    logger.debug("play: connection Error - "+e.args+" - retry")
-                    self.connect_mpd()
-                    self.play(playlistname,progress,retry+1)
-            except Exception as e:
-                logger.error("Could not play playlist: "+playlistname)
+        except ConnectionError as e:
+            if retry < 3:
+                logger.debug("play: connection Error - "+e.args[0]+" - retry")
+                self.connect_mpd()
+                self.play(playlistname,progress,retry+1)
+        except Exception as e:
+            logger.error("Could not play playlist: "+playlistname)
  
     def get_status(self):
         with self.mpd_client:

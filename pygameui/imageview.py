@@ -2,9 +2,13 @@ import pygame
 
 import view
 import resource
+import logging
+import callback
+import focus
 
 
 SCALE_TO_FILL = 0
+
 
 
 class ImageView(view.View):
@@ -39,7 +43,10 @@ class ImageView(view.View):
 
         self._enabled = False
         self.content_mode = content_mode
-        self.image = img
+        self._image = img
+        
+        self.on_clicked = callback.Signal()
+        
 
     @property
     def image(self):
@@ -60,7 +67,10 @@ class ImageView(view.View):
     def draw(self):
         self.surface = self._image
 
-
+    def mouse_up(self, button, point):
+        focus.set(None)
+        self.on_clicked(self, button)
+        
 def view_for_image_named(image_name):
     """Create an ImageView for the given image."""
 

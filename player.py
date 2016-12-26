@@ -16,6 +16,7 @@ import time
 import logging
 
 
+
 from mpd import *
 from threading import Lock
 
@@ -55,7 +56,12 @@ class Player(object):
         self.init_mpd()
         
         self.songtitle=""
+        self.em_scene=""
+        
+    def link_scene(self, scene):
+        self.em_scene=scene
 
+                
     def init_mpd(self):
         try:
             print "Connecting to MPD."
@@ -111,7 +117,8 @@ class Player(object):
                     # start playing from the beginning
                     self.mpd_client.play()
                  
-
+                self.em_scene.new_card(playlistname)
+                
                 info=self.mpd_client.currentsong()
                 print(info)
                 if 'title' in info:
@@ -121,12 +128,26 @@ class Player(object):
                 logger.debug("play: connection Error - "+e.args[0]+" - retry")
                 self.connect_mpd()
                 self.play(playlistname,progress,retry+1)
-        except Exception as e:
-            logger.error("Could not play playlist: "+playlistname)
+        #except Exception as e:
+        #   logger.error("Could not play playlist: "+playlistname+"Error: %s" % e.args[0])
  
+    def pause(self):
+        with self.mpd_client:
+            self.mpd_client.pause()
+    
     def get_status(self):
         with self.mpd_client:
             return self.mpd_client.status()
+            
+    def next(self):
+        with self.mpd_client:
+            if self.mpd_client.status()['playlistlength'] > 1:
+                self.mpd_client.next()
+    
+    def prev(self):
+        with self.mpd_client:
+            if self.mpd_client.status()['playlistlength'] > 1:
+                self.mpd_client.previous()
 
 
     def get_file_info(self):

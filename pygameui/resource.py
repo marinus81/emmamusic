@@ -41,12 +41,15 @@ def get_font(size, use_bold=False):
 # TODO update this to support multiple search paths
 
 
-def get_image(name):
+def get_image(name,path=None):
     try:
         img = image_cache[name]
     except KeyError:
-        path = 'resources/images/%s.png' % name
-        path = pkg_resources.resource_filename(package_name, path)
+        if path == None:
+            path = 'resources/images/%s.png' % name
+            path = pkg_resources.resource_filename(package_name, path)
+        else:
+            path = path + name + '.png'
         try:
             logger.debug('loading image %s' % path)
             img = pygame.image.load(path)

@@ -40,26 +40,111 @@ class EmmaMusicScene(ui.Scene):
         ui.Scene.__init__(self)
         
         self.player=player
+        self.player.link_scene(self)
+        
+        
+        self.img_prev=ui.get_image('rewind-icon_s')
+        self.img_play=ui.get_image('play-icon_s')
+        self.img_pause=ui.get_image('pause-icon_s')
+        self.img_next=ui.get_image('forward-icon_s')
+        
         label_height = ui.theme.current.label_height
         scrollbar_size = ui.SCROLLBAR_SIZE
+
+        self.background=ui.ImageButton(ui.Rect(0,16,320,215), ui.get_image('splash','/home/pi/music/images/'))
+        self.background.on_clicked.connect(self.button_click)
+        self.add_child(self.background)
         
-        self.now_playing=ui.Label(ui.Rect(0, 0, 320, label_height), 'Lied 1234')
+        self.now_playing=ui.Label(ui.Rect(0, 0, 320, label_height), '')
         self.add_child(self.now_playing)
         
-    def gpi_button(self, btn, mbtn):
-        logger.info(btn.text)
+        self.buttons_visible=False
         
-        if btn.text == '17 on':
-            logger.debug("Button 17 on pressed")
-    
+        self.btn_prev=ui.ImageButton(ui.Rect(20,88,64,64), self.img_prev)
+        self.btn_prev.on_clicked.connect(self.button_click)
+        self.btn_prev.hidden=True
+        self.add_child(self.btn_prev)
+        
+        self.playicon=True
+        self.btn_play=ui.ImageButton(ui.Rect(120,88,64,64), self.img_play)
+        self.btn_play.on_clicked.connect(self.button_click)
+        self.btn_play.hidden=True
+        self.add_child(self.btn_play)
+        
+        self.btn_next=ui.ImageButton(ui.Rect(220,88,64,64), self.img_next)
+        self.btn_next.on_clicked.connect(self.button_click)
+        self.btn_next.hidden=True
+        self.add_child(self.btn_next)
+        
+   
+   
     def set_now_playing_title(self, title):
         self.now_playing.text=title
-     
+        
+    def new_card(self, card_id):
+        self.background.hidden=True
+        self.background.image_view.image=ui.get_image(card_id,'/home/pi/music/images/')
+        self.background.hidden=False
+        self.show_buttons()
+        
+    def set_background_image(self, imagename):
+        self.background.image=ui.get_image(imagename,'/home/pi/music/images/')
+        
+    def show_buttons(self):
+        if not self.buttons_visible:
+            self.show_time=pygame.time.get_ticks() #remember time when we showed buttons
+            self.btn_prev.hidden=False
+            self.btn_play.hidden=False
+            self.btn_next.hidden=False
+            self.buttons_visible=True
+        
+    def hide_buttons(self):
+        if self.buttons_visible:
+            self.btn_prev.hidden=True
+            self.btn_play.hidden=True
+            self.btn_next.hidden=True
+            self.buttons_visible=False
+
+    def button_click(self, btn, mbtn):
+        if btn is self.btn_play:
+            logger.debug("button_click: btn_play ")
+            self.show_time=pygame.time.get_ticks() #refresh show time, so countdown restarts
+            player.pause()
+        elif btn is self.btn_prev: 
+            player.prev()
+        
+        elif btn is self.btn_next:
+            player.next()
+        
+        elif btn is self.background:
+            logger.debug("button_click: background ")
+            if self.now_playing.text != '':
+                self.show_buttons()
+        else:
+            logger.debug("button_click: <unknown>")
+            
     def update(self, dt):     
-        ui.Scene.update(self, dt)
+        
         #if self.now_playing.text != player.get_song_title():
         self.now_playing.text = player.get_song_title()
-
+        
+        
+        
+        
+        if self.buttons_visible:
+            status=player.get_status()
+            print "Status: %s, playicon= %s"%(status['state'],self.playicon)
+            if status['state'] != 'play' and self.playicon:
+                self.btn_play.image_view.image=self.img_pause
+                self.playicon=not self.playicon
+            elif status['state'] == 'play' and not self.playicon:
+                self.btn_play.image_view.image=self.img_play
+                self.playicon=not self.playicon
+                    
+            if (pygame.time.get_ticks() - self.show_time) > 5000:   #if some time has passed, hide buttons
+                self.hide_buttons()
+        
+        ui.Scene.update(self, dt)
         #self.set_now_playing_title(player.songtitle()['title'])
 	
 def signal_handler(signal, frame):

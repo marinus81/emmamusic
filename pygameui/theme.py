@@ -195,6 +195,7 @@ def init_light_theme():
     color7 = gray_color
     color8 = dark_gray_color
     color9 = black_color
+    c_color = clear_color
 
     light_theme.set(class_name='View',
                     state='normal',
@@ -295,23 +296,23 @@ def init_light_theme():
     light_theme.set(class_name='ImageButton',
                     state='normal',
                     key='background_color',
-                    value=(color4, color6))
+                    value=c_color)
     light_theme.set(class_name='ImageButton',
                     state='focused',
                     key='background_color',
-                    value=color1)
+                    value=None)
     light_theme.set(class_name='ImageButton',
                     state='normal',
                     key='border_color',
-                    value=color6)
+                    value=c_color)
     light_theme.set(class_name='ImageButton',
                     state='normal',
                     key='border_widths',
-                    value=1)
+                    value=0)
     light_theme.set(class_name='ImageButton',
                     state='normal',
                     key='padding',
-                    value=(6, 6))
+                    value=(0, 0))
 
     light_theme.set(class_name='ScrollbarThumbView',
                     state='normal',

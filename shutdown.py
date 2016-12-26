@@ -12,7 +12,6 @@ import subprocess
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(4, GPIO.IN, pull_up_down = GPIO.PUD_UP)
 
-print("Test")
 finish=1
 
 # Our function on what to do when the button is pressed

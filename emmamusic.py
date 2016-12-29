@@ -191,7 +191,7 @@ class EmmaMusicScene(ui.Scene):
                  self.progress_view.hidden = True
                  self.hide_buttons()
                 
-            if (pygame.time.get_ticks() - self.last_action_ts) > 120000:
+            if (pygame.time.get_ticks() - self.last_action_ts) > 180000:
                 self.do_shutdown()
             
             #show buttons if they should be visible

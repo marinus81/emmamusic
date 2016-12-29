@@ -1,4 +1,5 @@
 import os
+import subprocess
 import sys
 import pygameui as ui
 import logging
@@ -39,8 +40,13 @@ class EmmaMusicScene(ui.Scene):
     def __init__(self, player):
         ui.Scene.__init__(self)
         
+        signal.signal(signal.SIGINT, self.signal_handler)
+        signal.signal(signal.SIGTERM, self.signal_handler)
+        
         self.player=player
         self.player.link_scene(self)
+        
+        self.last_action_ts=pygame.time.get_ticks()
         
         
         self.img_prev=ui.get_image('rewind-icon_s')
@@ -82,6 +88,7 @@ class EmmaMusicScene(ui.Scene):
         self.now_playing.text=title
         
     def new_card(self, card_id):
+        self.last_action_ts=pygame.time.get_ticks()
         self.background.hidden=True
         self.background.image_view.image=ui.get_image(card_id,'/home/pi/music/images/')
         self.background.hidden=False
@@ -106,6 +113,7 @@ class EmmaMusicScene(ui.Scene):
             self.buttons_visible=False
 
     def button_click(self, btn, mbtn):
+        self.last_action_ts=pygame.time.get_ticks()
         if btn is self.btn_play:
             logger.debug("button_click: btn_play ")
             self.show_time=pygame.time.get_ticks() #refresh show time, so countdown restarts
@@ -124,15 +132,18 @@ class EmmaMusicScene(ui.Scene):
             logger.debug("button_click: <unknown>")
             
     def update(self, dt):     
-        
+        status=player.get_status()
+
         #if self.now_playing.text != player.get_song_title():
         self.now_playing.text = player.get_song_title()
         
+        if status['state'] == 'play':
+            self.last_action_ts=pygame.time.get_ticks()
         
-        
+        if (pygame.time.get_ticks() - self.last_action_ts) > 120000:
+            self.do_shutdown()
         
         if self.buttons_visible:
-            status=player.get_status()
             print "Status: %s, playicon= %s"%(status['state'],self.playicon)
             if status['state'] != 'play' and self.playicon:
                 self.btn_play.image_view.image=self.img_pause
@@ -147,11 +158,25 @@ class EmmaMusicScene(ui.Scene):
         ui.Scene.update(self, dt)
         #self.set_now_playing_title(player.songtitle()['title'])
 	
-def signal_handler(signal, frame):
-    print 'You pressed Ctrl+C!'
-    rfidreader.terminate()
-    player.close()
-    sys.exit(0)
+    def signal_handler(self, signal, frame):
+        print 'You pressed Ctrl+C!'
+        rfidreader.terminate()
+        player.close()
+        pygame.quit()
+        sys.exit(0)
+
+    def do_shutdown(self):
+        #os.system("sudo shutdown -h now")
+        rfidreader.terminate()
+        player.close()
+        time.sleep(5)
+        #GPIO.cleanup()
+        command = "/usr/bin/sudo /sbin/shutdown -h now"
+        process = subprocess.Popen(command.split(), stdout=subprocess.PIPE)
+        #output = process.communicate()[0]
+        #print output
+        pygame.quit()
+        sys.exit(0)
 
 
 
@@ -169,7 +194,7 @@ if __name__ == '__main__':
     rfidreader = RFIDReader(emscene,player)
     threading.Thread(target=rfidreader).start()
   
-    signal.signal(signal.SIGINT, signal_handler)
+   
     
     ui.scene.push(emscene)
     ui.run()

@@ -25,11 +25,17 @@ os.environ["SDL_AUDIODRIVER"] = "none"
 #os.environ["SDL_PATH_DSP"] = "/dev/null" 
 
 #init Logging
+
+
+
 log_format = '%(asctime)-6s: %(name)s - %(levelname)s - %(message)s'
 console_handler = logging.StreamHandler()
 console_handler.setFormatter(logging.Formatter(log_format))
 logger = logging.getLogger()
-logger.setLevel(logging.DEBUG)
+if len(sys.argv) >1 and sys.argv[1]=='--debug':
+    logger.setLevel(logging.DEBUG)
+else:
+    logger.setLevel(logging.ERROR)
 logger.addHandler(console_handler)
 
 MARGIN = 20
@@ -144,7 +150,7 @@ class EmmaMusicScene(ui.Scene):
             self.do_shutdown()
         
         if self.buttons_visible:
-            print "Status: %s, playicon= %s"%(status['state'],self.playicon)
+            logger.debug("Status: %s, playicon= %s"%(status['state'],self.playicon))
             if status['state'] != 'play' and self.playicon:
                 self.btn_play.image_view.image=self.img_pause
                 self.playicon=not self.playicon
@@ -159,10 +165,14 @@ class EmmaMusicScene(ui.Scene):
         #self.set_now_playing_title(player.songtitle()['title'])
 	
     def signal_handler(self, signal, frame):
-        print 'You pressed Ctrl+C!'
+        logger.error("You pressed Ctrl+C!")
+        logger.debug("calling rfidreader.terminate()")
         rfidreader.terminate()
+        logger.debug("calling player.close")
         player.close()
+        logger.debug("calling pygame.quit")
         pygame.quit()
+        logger.debug("calling sys.exit(0)")
         sys.exit(0)
 
     def do_shutdown(self):

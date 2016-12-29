@@ -45,7 +45,6 @@ class ImageView(view.View):
         self.content_mode = content_mode
         self._image = img
         
-        self.on_clicked = callback.Signal()
         
 
     @property
@@ -67,9 +66,6 @@ class ImageView(view.View):
     def draw(self):
         self.surface = self._image
 
-    def mouse_up(self, button, point):
-        focus.set(None)
-        self.on_clicked(self, button)
         
 def view_for_image_named(image_name):
     """Create an ImageView for the given image."""

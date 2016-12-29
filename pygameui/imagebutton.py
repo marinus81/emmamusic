@@ -25,15 +25,19 @@ class ImageButton(view.View):
 
         self.on_clicked = callback.Signal()
 
-        self.image_view = imageview.ImageView(pygame.Rect(0, 0, 0, 0), image)
+        #self.image_view = imageview.ImageView(pygame.Rect(0, 0, 0, 0), image)
+        self.image_view = imageview.ImageView(pygame.Rect(0,0,frame.w, frame.h), image)
         self.image_view._enabled = False
         self.add_child(self.image_view)
 
     def layout(self):
+        print "layout"
         self.frame.w = self.padding[0] * 2 + self.image_view.frame.w
         self.frame.h = self.padding[1] * 2 + self.image_view.frame.h
         self.image_view.frame.topleft = self.padding
+        print "self.frame.w: %s, self.frame.h: %s, self.image_view.frame.topleft: %s" % (self.frame.w,self.frame.h,self.image_view.frame.topleft)
         self.image_view.layout()
+        print "after image_view.layout() self.frame.w: %s, self.frame.h: %s, self.image_view.frame.topleft: %s" % (self.frame.w,self.frame.h,self.image_view.frame.topleft)
         view.View.layout(self)
 
     def mouse_up(self, button, point):

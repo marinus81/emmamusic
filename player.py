@@ -42,6 +42,7 @@ class LockableMPDClient(MPDClient):
 class Player(object):
 
     """The class responsible for playing audio"""
+    current_playlistname='init'
 
     def __init__(self):
         """Setup a connection to MPD to be able to play audio.
@@ -55,8 +56,7 @@ class Player(object):
         self.conn_details={ "host" : "localhost", "port" : 6600 }
         self.init_mpd()
         
-        self.songtitle=""
-        self.em_scene=""
+        self.em_scene=None
         
     def link_scene(self, scene):
         self.em_scene=scene
@@ -99,35 +99,28 @@ class Player(object):
             self.mpd_client.clear()
 
 
-    def play(self,playlistname, progress=None, retry=0):
+    def play(self, playlistname, retry=0):
         """Play a playlist"""
  
-       
-            
+
         #order of try and with is important - otherwise retry will block due to Locking   
         try:
             with self.mpd_client:    
-                self.mpd_client.clear()
-                self.mpd_client.load(playlistname)
-           
-                if progress:
-                    # resume at last known position
-                    self.mpd_client.seek(progress)
-                else: 
+                if not (self.mpd_client.status()['state'] == 'play' and self.current_playlistname == playlistname):
+                    self.current_playlistname=playlistname
+                    self.mpd_client.clear()
+                    self.mpd_client.load(playlistname)
+               
                     # start playing from the beginning
                     self.mpd_client.play()
-                 
-                self.em_scene.new_card(playlistname)
+                     
+                    self.em_scene.new_card(playlistname)
                 
-                info=self.mpd_client.currentsong()
-                print(info)
-                if 'title' in info:
-                    self.songtitle=info['title']
         except ConnectionError as e:
             if retry < 3:
                 logger.debug("play: connection Error - "+e.args[0]+" - retry")
                 self.connect_mpd()
-                self.play(playlistname,progress,retry+1)
+                self.play(playlistname,retry+1)
         #except Exception as e:
         #   logger.error("Could not play playlist: "+playlistname+"Error: %s" % e.args[0])
  
@@ -155,11 +148,22 @@ class Player(object):
             return self.mpd_client.currentsong()
     
     def get_song_title(self):
-        return self.songtitle
+        with self.mpd_client:
+            info=self.mpd_client.currentsong()
+            #print(info)
+            if 'title' in info:
+                return info['title']
+        return ''
 
     def close(self):
+        logger.debug("player.close()")
+        logger.debug("calling self.stop()")
         self.stop()
         time.sleep(0.5)
-        self.mpd_client.close()
-        time.sleep(0.5)
-        self.mpd_client.disconnect()
+        logger.debug("trying to get lock (with self.mpd_client:)")
+        with self.mpd_client:
+            logger.debug("calling  self.mpd_client.close()")
+            self.mpd_client.close()
+            time.sleep(0.5)
+            logger.debug("calling  self.mpd_client.disconnect()")
+            self.mpd_client.disconnect()

@@ -105,7 +105,7 @@ class Player(object):
 
         #order of try and with is important - otherwise retry will block due to Locking   
         try:
-            with self.mpd_client:    
+            with self.mpd_client:  
                 if not (self.mpd_client.status()['state'] == 'play' and self.current_playlistname == playlistname):
                     self.current_playlistname=playlistname
                     self.mpd_client.clear()
@@ -115,7 +115,8 @@ class Player(object):
                     self.mpd_client.play()
                      
                     self.em_scene.new_card(playlistname)
-                
+                logger.debug("Status: %s" %self.mpd_client.status())
+                logger.debug("currentsong: %s"%self.mpd_client.currentsong())
         except ConnectionError as e:
             if retry < 3:
                 logger.debug("play: connection Error - "+e.args[0]+" - retry")
@@ -132,15 +133,23 @@ class Player(object):
         with self.mpd_client:
             return self.mpd_client.status()
             
+    def get_currentsong(self):
+        with self.mpd_client:
+            return self.mpd_client.currentsong()
+                        
     def next(self):
         with self.mpd_client:
             if self.mpd_client.status()['playlistlength'] > 1:
                 self.mpd_client.next()
+                logger.debug("Status: %s" %self.mpd_client.status())
+                logger.debug("currentsong: %s"%self.mpd_client.currentsong())
     
     def prev(self):
         with self.mpd_client:
             if self.mpd_client.status()['playlistlength'] > 1:
                 self.mpd_client.previous()
+                logger.debug("Status: %s" %self.mpd_client.status())
+                logger.debug("currentsong: %s"%self.mpd_client.currentsong())
 
 
     def get_file_info(self):
@@ -150,7 +159,6 @@ class Player(object):
     def get_song_title(self):
         with self.mpd_client:
             info=self.mpd_client.currentsong()
-            #print(info)
             if 'title' in info:
                 return info['title']
         return ''

@@ -74,6 +74,7 @@ logger = logging.getLogger(__name__)
 
 Rect = pygame.Rect
 window_surface = None
+runui = True
 
 
 def init(name='', window_size=(640, 480)):
@@ -95,8 +96,10 @@ def run():
     down_in_view = None
 
     elapsed = 0
+    
+    global runui
 
-    while True:
+    while runui:
         dt = clock.tick(60)
 
         elapsed += dt

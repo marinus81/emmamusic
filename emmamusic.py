@@ -209,7 +209,18 @@ class EmmaMusicScene(ui.Scene):
             
             ui.Scene.update(self, dt)
         except Exception as e:
-            logger.error(e.args[0])
+            emesg="Some Error occured"
+            if type(e.args) is tuple:
+                if e.args:
+                    if len(e.args) == 1:
+                        emsg = e.args[0]
+                    elif len(e.args) > 1:
+                        emsg = '%s (%d)' % (e.args[1], e.args[0])
+                else: # empty tuple, e.g. socket.timeout
+                    emsg = str(e) or repr(e)
+            else:
+                emsg = e.args
+            logger.error(emesg)
 	
     def signal_handler(self, signal, frame):
         logger.error("You pressed Ctrl+C!")

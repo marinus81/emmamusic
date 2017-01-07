@@ -44,8 +44,9 @@ class EmmaMusicScene(ui.Scene):
     """
 
     shutdown = False  # if True will call OS shutdown command right before quitting
-    BRIGHT=500
-    DIM=150
+    DIM_BRIGHT=500
+    DIM_DARK=150
+    DIM_SHUT=20
 
     def __init__(self, player):
         """
@@ -115,7 +116,7 @@ class EmmaMusicScene(ui.Scene):
         self.add_child(self.progress_view)
         self.progress_view.hidden = True
 
-        self.set_lcd_brightness(self.BRIGHT) #light LCD
+        self.set_lcd_brightness(self.DIM_BRIGHT) #light LCD
 
     def set_now_playing_title(self, title):
         """
@@ -163,7 +164,7 @@ class EmmaMusicScene(ui.Scene):
             self.btn_prev.hidden = False
             self.btn_play.hidden = False
             self.btn_next.hidden = False
-            self.set_lcd_brightness(self.BRIGHT)
+            self.set_lcd_brightness(self.DIM_BRIGHT)
             self.buttons_visible = True
 
     def hide_buttons(self):
@@ -176,7 +177,7 @@ class EmmaMusicScene(ui.Scene):
             self.btn_prev.hidden = True
             self.btn_play.hidden = True
             self.btn_next.hidden = True
-            self.set_lcd_brightness(self.DIM)
+            self.set_lcd_brightness(self.DIM_DARK)
             self.buttons_visible = False
 
     def button_click(self, btn, mbtn):
@@ -279,7 +280,7 @@ class EmmaMusicScene(ui.Scene):
         :return:
         """
         logger.error("Received Signal to Terminate")
-        self.set_lcd_brightness(25)
+        self.set_lcd_brightness(self.DIM_SHUT)
         ui.runui = False
         # sys.exit(0)
 
@@ -289,7 +290,7 @@ class EmmaMusicScene(ui.Scene):
 
         :return:
         """
-        self.set_lcd_brightness(50)
+        self.set_lcd_brightness(self.DIM_SHUT)
         self.shutdown = True
         ui.runui = False
 

@@ -1,3 +1,6 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 import os
 import subprocess
 import sys
@@ -198,12 +201,14 @@ class EmmaMusicScene(ui.Scene):
             logger.debug("button_click: btn_play ")
             player.pause()  # toggle play/pause
         elif btn is self.btn_prev:
+            logger.debug("button_click: btn_prev ")
             try:
                 if int(status['song']) > 0:  # only accept 'prev' button push if this is not the first song
                     player.prev()
             except Exception as e:
                 logger.error(e, exc_info=True)  # log any exceptions
         elif btn is self.btn_next:
+            logger.debug("button_click: btn_next ")
             try:
                 if int(status['song']) < (int(status['playlistlength']) - 1):
                     player.next()
@@ -211,7 +216,7 @@ class EmmaMusicScene(ui.Scene):
                 logger.error(e, exc_info=True)  # log any exceptions
         elif btn is self.background:
             logger.debug("button_click: background ")
-            if self.now_playing.text != None:  # this could also be if status['state'] == 'play':
+            if status['state'] == 'play' or status['state']== 'pause':
                 self.show_buttons()
         else:
             logger.debug("button_click: <unknown>")
@@ -230,9 +235,9 @@ class EmmaMusicScene(ui.Scene):
 
             # Update song title display
             if 'title' in currentsong:
-                self.now_playing.text = currentsong['title']
+                self.now_playing.text = unicode(currentsong['title'], "utf-8")
             else:
-                self.now_playing.text = None
+                self.now_playing.text = u'Ü'.encode('utf-8') #None
 
             # if we are playing, update progress bar
             if status['state'] == 'play':
@@ -241,6 +246,8 @@ class EmmaMusicScene(ui.Scene):
                 logger.debug("progress: {}".format(progress))
                 self.progress_view.progress = progress if (
                     progress <= 1.0) else 1.0  # necessary due to precission issues at the end of a song
+            elif status['state'] == 'pause':
+                pass        #do not update if paused
             elif not self.showing_splash and self.now_playing.text == None:
                 # no song playing and not yet showing splash screen - load it and show it!
                 self.background.image_view.image = ui.get_image('splash', '/home/pi/music/images/')

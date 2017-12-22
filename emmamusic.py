@@ -237,7 +237,7 @@ class EmmaMusicScene(ui.Scene):
             if 'title' in currentsong:
                 self.now_playing.text = unicode(currentsong['title'], "utf-8")
             else:
-                self.now_playing.text = u'Ü'.encode('utf-8') #None
+                self.now_playing.text = None
 
             # if we are playing, update progress bar
             if status['state'] == 'play':

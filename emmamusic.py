@@ -34,7 +34,7 @@ logger = logging.getLogger()
 if len(sys.argv) > 1 and sys.argv[1] == '--debug':
     logger.setLevel(logging.DEBUG)
 else:
-    logger.setLevel(logging.ERROR)
+    logger.setLevel(logging.INFO)
 logger.addHandler(console_handler)
 
 
@@ -50,6 +50,7 @@ class EmmaMusicScene(ui.Scene):
     DIM_BRIGHT=500
     DIM_DARK=150
     DIM_SHUT=20
+    IDLE_TIME=360000
 
     def __init__(self, player):
         """
@@ -256,7 +257,7 @@ class EmmaMusicScene(ui.Scene):
                 self.hide_buttons()  # hide play buttons as we don't play any song
 
             # shutdown if idle for longer thatn 180 seconds
-            if (pygame.time.get_ticks() - self.last_action_ts) > 180000:
+            if (pygame.time.get_ticks() - self.last_action_ts) > self.IDLE_TIME:
                 self.do_shutdown()
 
             # update play/pause, etc. buttons if they should be visible
@@ -297,6 +298,7 @@ class EmmaMusicScene(ui.Scene):
 
         :return:
         """
+        logger.info("Shutting down (do_shutdown)")
         self.set_lcd_brightness(self.DIM_SHUT)
         self.shutdown = True
         ui.runui = False
